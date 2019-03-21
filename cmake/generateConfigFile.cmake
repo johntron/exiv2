@@ -26,6 +26,7 @@ check_cxx_symbol_exists(gmtime_r    time.h         EXV_HAVE_GMTIME_R)
 check_cxx_symbol_exists(mmap        sys/mman.h     EXV_HAVE_MMAP )
 check_cxx_symbol_exists(munmap      sys/mman.h     EXV_HAVE_MUNMAP )
 check_cxx_symbol_exists(strerror_r  string.h       EXV_HAVE_STRERROR_R )
+check_symbol_exists    (wcsrtombs_s wchar.h        EXV_HAVE_WCSRTOMBS_S)
 
 check_cxx_source_compiles( "
 #include <string.h>

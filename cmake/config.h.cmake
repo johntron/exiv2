@@ -27,6 +27,9 @@
 // Define to enable the Windows unicode path support.
 #cmakedefine EXV_UNICODE_PATH
 
+// Define if you have the wcsrtombs_s function.
+#cmakedefine EXV_HAVE_WCSRTOMBS_S
+
 /* Define to `const' or to empty, depending on the second argument of `iconv'. */
 #cmakedefine ICONV_ACCEPTS_CONST_INPUT
 #if defined ICONV_ACCEPTS_CONST_INPUT

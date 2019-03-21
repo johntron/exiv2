@@ -25,14 +25,65 @@
   @date    25-May-18, D4N: created
  */
 
+#include <config.h>
+
 #include "helper_functions.hpp"
+#include "unused.h"
 
-#include <string.h>
-
+#include <cassert>
+#include <cstring>
+#include <cwchar>
 
 std::string string_from_unterminated(const char* data, size_t data_length)
 {
     const size_t StringLength = strnlen(data, data_length);
 
     return std::string(data, StringLength);
+}
+
+std::string wideStr2Utf8(const std::wstring& wStr)
+{
+    std::mbstate_t state = std::mbstate_t();
+    const wchar_t* wstr = wStr.c_str();
+
+#ifdef EXV_HAVE_WCSRTOMBS_S
+    size_t converted_length = 0;
+    const errno_t err = wcsrtombs_s(&converted_length, nullptr, 0, &wstr, 0, &state);
+#ifdef NDEBUG
+    UNUSED(err);
+#else
+    assert(err == 0);
+#endif
+
+#else
+    const std::size_t converted_length = std::wcsrtombs(nullptr, &wstr, 0, &state);
+#endif
+    // conversion failed => return an empty string
+    if (converted_length == static_cast<std::size_t>(-1)) {
+        return std::string("");
+    }
+
+    // create a string large enough to store the result + \0
+    std::string result(converted_length + 1, 0);
+
+#ifdef EXV_HAVE_WCSRTOMBS_S
+    size_t actual_conversion_result = 0;
+    const errno_t err_2 =
+        wcsrtombs_s(&actual_conversion_result, &result[0], result.size(), &wstr, result.size(), &state);
+#ifdef NDEBUG
+    UNUSED(err);
+#else
+    assert(err_2 == 0);
+#endif
+#else
+    const std::size_t actual_conversion_result = std::wcsrtombs(&result[0], &wstr, result.size(), &state);
+#endif
+
+#ifdef NDEBUG
+    UNUSED(actual_conversion_result);
+#else
+    assert(actual_conversion_result == converted_length);
+#endif
+
+    return result;
 }

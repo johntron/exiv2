@@ -44,3 +44,12 @@
 
  */
 std::string string_from_unterminated(const char* data, size_t data_length);
+
+/// Convert a wide string to a UTF8 encoded string
+///
+/// @param[in] wStr  Unicode encoded wide string
+///
+/// @return UTF-8 encoded string
+///
+/// @throw std::range_error when `wStr` contains an invalid code point
+std::string wideStr2Utf8(const std::wstring& wStr);
