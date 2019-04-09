@@ -757,7 +757,7 @@ namespace Action {
             }
             Exiv2::DataBuf buf(md.size());
             md.copy(buf.pData_, pImage->byteOrder());
-            Exiv2::hexdump(std::cout, buf.pData_, buf.size_);
+            Exiv2::hexdump(std::cout, buf.pData_, static_cast<long>(buf.size_));
         }
         std::cout << std::endl;
         return true;
@@ -1085,8 +1085,7 @@ namespace Action {
     int Extract::writeThumbnail() const
     {
         if (!Exiv2::fileExists(path_, true)) {
-            std::cerr << path_
-                      << ": " << _("Failed to open the file\n");
+            std::cerr << path_ << ": " << _("Failed to open the file\n");
             return -1;
         }
         Exiv2::Image::UniquePtr image = Exiv2::ImageFactory::open(path_);
@@ -1098,13 +1097,10 @@ namespace Action {
                       << ": " << _("No Exif data found in the file\n");
             return -3;
         }
-        int rc = 0;
+        
         Exiv2::ExifThumb exifThumb(exifData);
         std::string thumbExt = exifThumb.extension();
-        if (thumbExt.empty()) {
-            std::cerr << path_ << ": " << _("Image does not contain an Exif thumbnail\n");
-        }
-        else {
+        if (!thumbExt.empty()) {
             std::string thumb = newFilePath(path_, "-thumb");
             std::string thumbPath = thumb + thumbExt;
             if (dontOverwrite(thumbPath)) return 0;
@@ -1116,12 +1112,13 @@ namespace Action {
                               << thumbPath << std::endl;
                 }
             }
-            rc = exifThumb.writeFile(thumb);
-            if (rc == 0) {
-                std::cerr << path_ << ": " << _("Exif data doesn't contain a thumbnail\n");
+            size_t rc = exifThumb.writeFile(thumb);
+            if (rc != 0) {
+                return static_cast<int>(rc);
             }
         }
-        return rc;
+        std::cerr << path_ << ": " << _("Image does not contain an Exif thumbnail\n");
+        return 0;
     } // Extract::writeThumbnail
 
     int Extract::writePreviews() const
@@ -1209,10 +1206,9 @@ namespace Action {
             std::cout << pvImg.size() << " " << _("bytes") << ") "
                       << _("to file") << " " << pvPath << std::endl;
         }
-        long rc = pvImg.writeFile(pvFile);
+        size_t rc = pvImg.writeFile(pvFile);
         if (rc == 0) {
-            std::cerr << path_ << ": " << _("Image does not have preview")
-                      << " " << num << "\n";
+            std::cerr << path_ << ": " << _("Image does not have preview") << " " << num << "\n";
         }
     } // Extract::writePreviewFile
 
